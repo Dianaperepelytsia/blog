@@ -3,26 +3,34 @@
 namespace App\Http\Controllers\Blog\Admin;
 
 //use App\Http\Controllers\Controller;
-//use Illuminate\Http\Request;
 use App\Models\BlogCategory;
+use App\Repositories\BlogCategoryRepository;
 use Illuminate\Support\Str;
+use Illuminate\Http\Request;
 use App\Http\Requests\BlogCategoryUpdateRequest;
 use App\Http\Requests\BlogCategoryCreateRequest;
 
-
 class CategoryController extends BaseController
-
 {
-    /**
-     * Display a listing of the resource.
-     *
+/**
+* Display a listing of the resource.
+*
+* @var BlogCategoryRepository
      * @return \Illuminate\Http\Response
      */
+
+    private $blogCategoryRepository;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->blogCategoryRepository = app(BlogCategoryRepository::class);
+    }
     public function index()
     {
-        //
         //dd(__METHOD__);
-        $paginator = BlogCategory::paginate(5);
+        //$paginator = BlogCategory::paginate(5);
+        $paginator = $this->blogCategoryRepository->getAllWithPaginate(5);
 
         return view('blog.admin.categories.index', compact('paginator'));
     }
@@ -34,10 +42,9 @@ class CategoryController extends BaseController
      */
     public function create()
     {
-        //
-        //dd(__METHOD__);
         $item = new BlogCategory();
-        $categoryList = BlogCategory::all();
+        //$categoryList = BlogCategory::all();
+        $categoryList = $this->blogCategoryRepository->getForComboBox();
 
         return view('blog.admin.categories.edit', compact('item', 'categoryList'));
     }
@@ -48,14 +55,12 @@ class CategoryController extends BaseController
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(BlogCategoryCreateRequest $request)
+    public function store(Request $request)
     {
-        //
-        //dd(__METHOD__);
         $data = $request->input(); //отримаємо масив даних, які надійшли з форми
-        if (empty($data['slug'])) { //якщо псевдонім порожній
+        /*if (empty($data['slug'])) { //якщо псевдонім порожній
             $data['slug'] = Str::slug($data['title']); //генеруємо псевдонім
-        }
+        }*/
 
         $item = (new BlogCategory())->create($data); //створюємо об'єкт і додаємо в БД
 
@@ -68,7 +73,6 @@ class CategoryController extends BaseController
                 ->withErrors(['msg' => 'Помилка збереження'])
                 ->withInput();
         }
-
     }
 
     /**
@@ -79,8 +83,7 @@ class CategoryController extends BaseController
      */
     public function show($id)
     {
-        //
-        //dd(__METHOD__);
+        //dd(METHOD);
     }
 
     /**
@@ -91,10 +94,11 @@ class CategoryController extends BaseController
      */
     public function edit($id)
     {
-        //
-        //dd(__METHOD__);
-        $item = BlogCategory::findOrFail($id);
-        $categoryList = BlogCategory::all();
+        $item = $this->blogCategoryRepository->getEdit($id);
+        if (empty($item)) {                         //помилка, якщо репозиторій не знайде наш ід
+            abort(404);
+        }
+        $categoryList = $this->blogCategoryRepository->getForComboBox($item->parent_id);
 
         return view('blog.admin.categories.edit', compact('item', 'categoryList'));
     }
@@ -108,9 +112,10 @@ class CategoryController extends BaseController
      */
     public function update(BlogCategoryUpdateRequest $request, $id)
     {
-        //
-        //dd(__METHOD__);
-        $item = BlogCategory::find($id);
+        //dd(METHOD);
+        //$item = BlogCategory::find($id);
+        $item = $this->blogCategoryRepository->getEdit($id);
+
         if (empty($item)) { //якщо ід не знайдено
             return back() //redirect back
             ->withErrors(['msg' => "Запис id=[{$id}] не знайдено"]) //видати помилку
@@ -118,12 +123,11 @@ class CategoryController extends BaseController
         }
 
         $data = $request->all(); //отримаємо масив даних, які надійшли з форми
-        if (empty($data['slug'])) { //якщо псевдонім порожній
+        /*if (empty($data['slug'])) { //якщо псевдонім порожній
             $data['slug'] = Str::slug($data['title']); //генеруємо псевдонім
-        }
+        }*/
 
         $result = $item->update($data);  //оновлюємо дані об'єкта і зберігаємо в БД
-
         if ($result) {
             return redirect()
                 ->route('blog.admin.categories.edit', $item->id)
@@ -143,7 +147,7 @@ class CategoryController extends BaseController
      */
     public function destroy($id)
     {
-        //
-        //dd(__METHOD__);
+        //dd(METHOD);
     }
 }
+
