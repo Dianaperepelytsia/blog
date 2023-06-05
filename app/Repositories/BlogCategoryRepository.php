@@ -46,7 +46,7 @@ class BlogCategoryRepository extends CoreRepository
 
         $result = $this                           //2 варіант
         ->startConditions()
-            ->selectRaw($columns)
+            ->selectRaw($columns) ->with(['parentCategory:id,title',])
             ->toBase()
             ->get();
 
