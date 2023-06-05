@@ -7,7 +7,7 @@ use App\Jobs\BlogPostAfterDeleteJob;
 use App\Repositories\BlogPostRepository;
 use App\Repositories\BlogCategoryRepository;
 use App\Http\Requests\BlogPostUpdateRequest;
-//use Carbon\Carbon;
+use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\BlogPost;
@@ -23,7 +23,11 @@ class PostController extends BaseController
      * @return \Illuminate\Http\Response
      */
     private $blogPostRepository;
+    /**
+     * @var BlogCategoryRepository
+     */
     private $blogCategoryRepository; // властивість через яку будемо звертатись в репозиторій категорій
+
 
     public function __construct()
     {
